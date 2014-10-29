@@ -58,6 +58,7 @@ module Puppet
       validate do |value|
         fail("Invalid vm_guest_ip #{value}") unless (IPAddr.new(value) rescue false)
       end
+    end
 
     newparam(:private_end_port) do
       desc "Private END port"
