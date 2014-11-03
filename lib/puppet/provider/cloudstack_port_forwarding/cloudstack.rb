@@ -51,15 +51,15 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
       'openfirewall' => 'true',
     }
 
-    if vm_guest_ip
+    if @resource[:vm_guest_ip]
       params['vmguestip'] = @resource[:vm_guest_ip]
     end
 
-    if private_end_port
+    if @resource[:private_end_port]
       params['privateendport'] = @resource[:private_end_port]
     end
 
-    if public_end_port
+    if @resource[:public_end_port]
       params['publicendport'] = @resource[:public_end_port]
     end
 
@@ -96,7 +96,7 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
 
   def exists?
     self.class.instances.each do |instance|
-      if instance.get(:name) == "#{@resource[:front_ip]}_#{@resource[:virtual_machine_id]}_#{@resource[:privateport]}_#{@resource[:publicport]}_#{@resource[:protocol].downcase}"
+      if instance.get(:name) == "#{@resource[:front_ip]}_#{@resource[:virtual_machine_id]}_#{@resource[:vm_guest_ip]}_#{@resource[:privateport]}_#{@resource[:publicport]}_#{@resource[:protocol].downcase}"
         return true
       end
     end
