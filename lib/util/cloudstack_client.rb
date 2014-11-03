@@ -577,7 +577,7 @@ module CloudstackClient
     ##
     # Creates a port forwarding rule.
 
-    def create_port_forwarding_rule(ip_address_id, private_port, protocol, public_port, virtual_machine_id)
+    def create_port_forwarding_rule(ip_address_id, private_port, protocol, public_port, virtual_machine_id, private_end_port=nil, public_end_port=nil, vm_guest_ip=nil)
       params = {
           'command' => 'createPortForwardingRule',
           'ipAddressId' => ip_address_id,
@@ -586,6 +586,19 @@ module CloudstackClient
           'publicPort' => public_port,
           'virtualMachineId' => virtual_machine_id
       }
+      
+      if vm_guest_ip
+        params['vmguestip'] = vm_guest_ip
+      end
+
+      if private_end_port
+        params['privateendport'] = private_end_port
+      end
+
+      if public_end_port
+        params['publicendport'] = public_end_port
+      end
+
       json = send_async_request(params)
       json['portforwardingrule']
     end
