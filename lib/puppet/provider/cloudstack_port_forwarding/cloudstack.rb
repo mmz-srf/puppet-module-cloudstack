@@ -27,6 +27,17 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
           :virtual_machine_id => pf_rule['virtualmachineid'],
           :ensure => :present
         )
+        instances << new(
+          :name => "#{pf_rule['ipaddress']}_#{pf_rule['virtualmachineid']}_#{pf_rule['privateport']}_#{pf_rule['publicport']}_#{pf_rule['protocol'].downcase}",
+          :front_ip => pf_rule['ipaddress'],
+          :privateport => pf_rule['privateport'],
+          :publicport => pf_rule['publicport'],
+          :protocol => pf_rule['protocol'],
+          :virtual_machine => pf_rule['virtualmachinename'],
+          :vm_guest_ip => pf_rule['vmguestip'],
+          :virtual_machine_id => pf_rule['virtualmachineid'],
+          :ensure => :present
+        )
       end
     end
     instances
@@ -97,6 +108,8 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
   def exists?
     self.class.instances.each do |instance|
       if instance.get(:name) == "#{@resource[:front_ip]}_#{@resource[:virtual_machine_id]}_#{@resource[:vm_guest_ip]}_#{@resource[:privateport]}_#{@resource[:publicport]}_#{@resource[:protocol].downcase}"
+        return true
+      elsif instance.get(:name) == "#{@resource[:front_ip]}_#{@resource[:virtual_machine_id]}_#{@resource[:privateport]}_#{@resource[:publicport]}_#{@resource[:protocol].downcase}"
         return true
       end
     end
