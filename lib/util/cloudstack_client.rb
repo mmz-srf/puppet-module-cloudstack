@@ -662,7 +662,6 @@ module CloudstackClient
         puts "Error #{response.code}: #{response.message}"
         puts JSON.pretty_generate(JSON.parse(response.body))
         puts "URL: #{url}"
-        exit 1
       end
 
       json = JSON.parse(response.body)
