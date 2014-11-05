@@ -25,6 +25,7 @@ require 'net/http'
 require 'net/https'
 require 'json'
 require 'yaml'
+require 'ipaddr'
 
 module CloudstackClient
   module Helper
@@ -79,6 +80,7 @@ module CloudstackClient
 
     @@async_poll_interval = 2.0
     @@async_timeout = 300
+    @@nic_cache = {}
 
     def initialize(api_url, api_key, secret_key)
       @api_url = api_url
@@ -168,6 +170,41 @@ module CloudstackClient
         return nic if nic['isdefault']
       end
     end
+
+    ##
+    # Test if ip is a secondary ip of the virtual_machine identified by virtual_machine_id
+
+    def is_secondary_ip(virtual_machine_id, ip)
+
+      key = "#{virtual_machine_id}#{ip}"
+      @@nic_cache[key] = verify_is_secondary_ip(virtual_machine_id, ip) unless @@nic_cache.has_key?(key)
+
+      return @@nic_cache[key]
+    end
+
+    def verify_is_secondary_ip(virtual_machine_id, ip)
+      begin
+        IPAddr.new(ip)
+      rescue
+        # legacy calls traditionally did not know what their server network ip address is.
+        # assuming, it can't be a secondary ip then...
+        return false
+      end
+
+      json = send_request({'command' => 'listNics', 'virtualmachineid' => virtual_machine_id})
+
+      return false unless json.has_key?('nic')
+
+      json['nic'].each do |nic_item|
+        next unless nic_item.has_key?('secondaryip')
+        nic_item['secondaryip'].each do |sip_item|
+          return true unless not sip_item['ipaddress'] = ip
+        end
+      end
+      return false
+    end
+
+
 
     ##
     # Lists all the servers in your account.
