@@ -58,7 +58,18 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
         'openfirewall' => 'true',
     }
 
-    params['vmguestip'] = @resource[:vm_guest_ip] unless @resource[:vm_guest_ip] = "0.0.0.0"
+    params['vmguestip'] = @resource[:vm_guest_ip] unless @resource[:vm_guest_ip] == '0.0.0.0'
+
+    if params['vmguestip']
+      if api.is_secondary_ip(@resource[:virtual_machine_id], params['vmguestip'])
+        debug("port_forwarding.create: virtual machine #{@resource[:virtual_machine_id]} already owns the secondary ip #{params['vmguestip']}.")
+      else
+        debug("port_forwarding.create: virtual machine #{@resource[:virtual_machine_id]} needs to acquire the secondary ip #{params['vmguestip']}.")
+        api.add_ip_to_virtualmachine(@resource[:virtual_machine_id], params['vmguestip'])
+      end
+    else
+      debug("port_forwarding.create: virtual machine #{@resource[:virtual_machine_id]} wants to port forward to a primary ip #{@resource[:vm_guest_ip]}")
+    end
 
     if @resource[:private_end_port]
       params['privateendport'] = @resource[:private_end_port]
@@ -68,9 +79,6 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
       params['publicendport'] = @resource[:public_end_port]
     end
 
-    puts "createPortForwardingRule for resource #{@resource[:name]} #{@resource[:front_ip]} --> #{@resource[:vm_guest_ip]}"
-    puts " public_ip = " << public_ip_address.to_yaml
-    puts "  params = " << params.to_yaml
     api.send_request(params)
     true
   end
@@ -104,7 +112,7 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
 
   def exists?
     expected_name = "#{@resource['front_ip']}_#{@resource['vm_guest_ip']}_#{@resource['virtual_machine_id']}_#{@resource['privateport']}_#{@resource['publicport']}_#{@resource['protocol'].downcase}"
-    puts "checking existance of port_forwarding #{expected_name} resource ip=#{@resource[:vm_guest_ip]}"
+    debug("Checking presence of #{@resource['protocol']}-port_forwarding #{@resource['front_ip']}:#{@resource['publicport']} --> #{@resource[:vm_guest_ip]}:#{@resource['privateport']} for resource #{expected_name}")
     self.class.instances.each do |instance|
       if instance.get(:name) == expected_name
         return true

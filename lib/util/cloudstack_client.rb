@@ -171,18 +171,52 @@ module CloudstackClient
       end
     end
 
+    def list_nics(virtual_machine_id)
+      if not @@nic_cache.has_key?(virtual_machine_id)
+        @@nic_cache[virtual_machine_id] = send_request({'command' => 'listNics', 'virtualmachineid' => virtual_machine_id})
+      end
+
+      raise "Could not get list of network cards for virtual machine #{virtual_machine_id}" unless @@nic_cache[virtual_machine_id].has_key?('nic')
+
+      @@nic_cache[virtual_machine_id]
+    end
+
+    ## 
+    # Assigns secondary IP to virtual machine identified by virtual_machine_id
+
+    def add_ip_to_virtualmachine(virtual_machine_id, ipaddress)
+      nic = get_server_default_nic(send_request({'command' => 'listNics', 'virtualmachineid' => virtual_machine_id}))
+      raise "Could not find network card id for virtual_machine #{virtual_machine_id}" unless nic.has_key?('id')
+
+      json = send_request({'command' => 'addIpToNic', 'nicid' => nic['id'], 'ipaddress' => ipaddress})
+
+      debug("reserved secondary ip #{ipaddress} for virtual machine #{virtual_machine_id}:")
+      debug(json.to_yaml)
+      true
+    end
+
+    ##
+    # Test if ip is a primary ip of the virtual_machine identified by virtual_machine_id
+
+    def is_primary_ip(virtual_machine_id, ip)
+      begin
+        IPAddr.new(ip)
+      rescue
+        return false
+      end
+
+      json = list_nics(virtual_machine_id)
+      json['nic'].each do |nic_item|
+        next unless nic_item.has_key?('ipaddress')
+        return true if nic_item['ipaddress'] == ip
+      end
+      return false
+    end
+
     ##
     # Test if ip is a secondary ip of the virtual_machine identified by virtual_machine_id
 
     def is_secondary_ip(virtual_machine_id, ip)
-
-      key = "#{virtual_machine_id}#{ip}"
-      @@nic_cache[key] = verify_is_secondary_ip(virtual_machine_id, ip) unless @@nic_cache.has_key?(key)
-
-      return @@nic_cache[key]
-    end
-
-    def verify_is_secondary_ip(virtual_machine_id, ip)
       begin
         IPAddr.new(ip)
       rescue
@@ -191,20 +225,15 @@ module CloudstackClient
         return false
       end
 
-      json = send_request({'command' => 'listNics', 'virtualmachineid' => virtual_machine_id})
-
-      return false unless json.has_key?('nic')
-
+      json = listNics(virtual_machine_id)
       json['nic'].each do |nic_item|
         next unless nic_item.has_key?('secondaryip')
         nic_item['secondaryip'].each do |sip_item|
-          return true unless not sip_item['ipaddress'] = ip
+          return true if sip_item['ipaddress'] == ip
         end
       end
       return false
     end
-
-
 
     ##
     # Lists all the servers in your account.
@@ -566,7 +595,7 @@ module CloudstackClient
     def associate_ip_address(network_id)
       params = {
           'command' => 'associateIpAddress',
-    'networkid' => network_id
+          'networkid' => network_id
       }
 
       json = send_async_request(params)
@@ -654,7 +683,7 @@ module CloudstackClient
     # List loadbalancer rules
     def list_loadbalancer_rules(project_name = nil)
       params = {
-        'command' => 'listLoadBalancerRules',
+          'command' => 'listLoadBalancerRules',
       }
       if project_name
         project = get_project(project_name)
@@ -699,6 +728,7 @@ module CloudstackClient
         puts "Error #{response.code}: #{response.message}"
         puts JSON.pretty_generate(JSON.parse(response.body))
         puts "URL: #{url}"
+        # exit 1
       end
 
       json = JSON.parse(response.body)
