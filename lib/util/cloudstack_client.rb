@@ -185,7 +185,7 @@ module CloudstackClient
     # Assigns secondary IP to virtual machine identified by virtual_machine_id
 
     def add_ip_to_virtualmachine(virtual_machine_id, ipaddress)
-      nic = get_server_default_nic(send_request({'command' => 'listNics', 'virtualmachineid' => virtual_machine_id}))
+      nic = get_server_default_nic(list_nics(virtual_machine_id))
       raise "Could not find network card id for virtual_machine #{virtual_machine_id}" unless nic.has_key?('id')
 
       json = send_request({'command' => 'addIpToNic', 'nicid' => nic['id'], 'ipaddress' => ipaddress})
@@ -225,7 +225,7 @@ module CloudstackClient
         return false
       end
 
-      json = listNics(virtual_machine_id)
+      json = list_nics(virtual_machine_id)
       json['nic'].each do |nic_item|
         next unless nic_item.has_key?('secondaryip')
         nic_item['secondaryip'].each do |sip_item|
