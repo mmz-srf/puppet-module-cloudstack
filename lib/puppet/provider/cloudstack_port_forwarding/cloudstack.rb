@@ -64,6 +64,11 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
       if api.is_secondary_ip(@resource[:virtual_machine_id], params['vmguestip'])
         debug("port_forwarding.create: virtual machine #{@resource[:virtual_machine_id]} already owns the secondary ip #{params['vmguestip']}.")
       else
+        project = get_project()
+        raise "Can't create port forwarding to secondary ip's without the project id..." unless project['id']
+        vm = api.get_virtualmachine_for_ipaddress(params['vmguestip'], project['id'])
+
+        raise "Secondary IP #{params['vmguestip']} is currently owned by #{vm['displayname']}. You can: a) reprovision #{vm['displayname']} OR b) move your secondary ip to a different last octet..." if vm['
         debug("port_forwarding.create: virtual machine #{@resource[:virtual_machine_id]} needs to acquire the secondary ip #{params['vmguestip']}.")
         api.add_ip_to_virtualmachine(@resource[:virtual_machine_id], params['vmguestip'])
       end

@@ -181,6 +181,24 @@ module CloudstackClient
       @@nic_cache[virtual_machine_id]
     end
 
+    ##
+    # Find the virtual machine that owns the ipaddress.
+
+    def get_virtualmachine_for_ipaddress(ipaddress, project_id)
+      params = {
+        'command'   => 'listVirtualMachines',
+        'projectid' => project_id
+      }
+      json = send_request(params)
+      json['virtualmachine'].each do |vm|
+        vm['nic'].each do |nic|
+          puts "Checking vm #{vm['displayname']} with ip #{nic['ipaddress']}"
+          return vm if nic['ipaddress'] == ipaddress
+        end
+      end
+ 
+    end
+
     ## 
     # Assigns secondary IP to virtual machine identified by virtual_machine_id
 
@@ -188,10 +206,9 @@ module CloudstackClient
       nic = get_server_default_nic(list_nics(virtual_machine_id))
       raise "Could not find network card id for virtual_machine #{virtual_machine_id}" unless nic.has_key?('id')
 
-      json = send_request({'command' => 'addIpToNic', 'nicid' => nic['id'], 'ipaddress' => ipaddress})
-
-      debug("reserved secondary ip #{ipaddress} for virtual machine #{virtual_machine_id}:")
-      debug(json.to_yaml)
+      params = {'command' => 'addIpToNic', 'nicid' => nic['id'], 'ipaddress' => ipaddress}
+      json = send_request(params)
+      puts json.to_yaml
       true
     end
 
