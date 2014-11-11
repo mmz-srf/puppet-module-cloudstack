@@ -195,7 +195,7 @@ module CloudstackClient
           return vm if nic['ipaddress'] == ipaddress
         end
       end
- 
+      false
     end
 
     ## 
