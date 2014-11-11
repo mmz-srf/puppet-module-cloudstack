@@ -68,7 +68,7 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
         raise "Can't create port forwarding to secondary ip's without the project id..." unless project['id']
         vm = api.get_virtualmachine_for_ipaddress(params['vmguestip'], project['id'])
 
-        if not vm['displayname']
+        if vm['displayname'].to_s != ''
           raise "Secondary IP #{params['vmguestip']} is currently owned by #{vm['displayname']}. You can: a) delete vm #{vm['displayname']} OR b) move your secondary ip to a different last octet..."
         end
         debug("port_forwarding.create: virtual machine #{@resource[:virtual_machine_id]} needs to acquire the secondary ip #{params['vmguestip']}.")

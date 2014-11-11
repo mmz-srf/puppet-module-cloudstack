@@ -192,7 +192,6 @@ module CloudstackClient
       json = send_request(params)
       json['virtualmachine'].each do |vm|
         vm['nic'].each do |nic|
-          puts "Checking vm #{vm['displayname']} with ip #{nic['ipaddress']}"
           return vm if nic['ipaddress'] == ipaddress
         end
       end
