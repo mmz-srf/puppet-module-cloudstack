@@ -205,10 +205,36 @@ module CloudstackClient
       nic = get_server_default_nic(list_nics(virtual_machine_id))
       raise "Could not find network card id for virtual_machine #{virtual_machine_id}" unless nic.has_key?('id')
 
-      params = {'command' => 'addIpToNic', 'nicid' => nic['id'], 'ipaddress' => ipaddress}
+      params = {
+          'command' => 'addIpToNic',
+          'nicid' => nic['id'],
+          'ipaddress' => ipaddress
+      }
       json = send_request(params)
       puts json.to_yaml
       true
+    end
+
+    ##
+    # Remove secondary IP from virtual machine identified by virtual_machine_id
+
+    def remove_ip_from_virtualmachine(virtual_machine_id, ipaddress)
+      secondary_ip_id = false
+      json = list_nics(virtual_machine_id)
+      json['nic'].each do |nic_item|
+        next unless nic_item.has_key?('secondaryip')
+        nic_item['secondaryip'].each do |sip_item|
+          next unless sip_item['ipaddress'] == ipaddress
+          secondary_ip_id = sip_item['id']
+        end
+      end
+      return false unless secondary_ip_id
+
+      params = {
+          'command' => 'removeIpFromNic',
+          'id' => secondary_ip_id
+      }
+      json = send_request(params)
     end
 
     ##

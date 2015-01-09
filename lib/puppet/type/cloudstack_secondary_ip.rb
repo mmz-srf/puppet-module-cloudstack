@@ -6,7 +6,7 @@ module Puppet
 
       cloudstack_secondary_ip{'rule_name':
         ensure => 'present',
-        nic_id,
+        virtual_machine_id,
         ipaddress
       }"
 
@@ -17,8 +17,8 @@ module Puppet
       isnamevar
     end
 
-    newparam(:nic_id) do
-      desc "The network interface card identifier"
+    newparam(:virtual_machine_id) do
+      desc "Cloudstack ID of the virtual machine"
     end
 
     newparam(:ipaddress) do
