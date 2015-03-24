@@ -199,6 +199,23 @@ module CloudstackClient
     end
 
     ## 
+    # Get new secondary IP for virtual machine identified by virtual_machine_id
+
+    def get_new_ip_for_virtualmachine(virtual_machine_id)
+      nic = get_server_default_nic(list_nics(virtual_machine_id))
+      raise "Could not find network card id for virtual_machine #{virtual_machine_id}" unless nic.has_key?('id')
+
+      params = {
+          'command' => 'addIpToNic',
+          'nicid' => nic['id']
+      }
+      json = send_async_request(params, 'addIpToVmNic')
+      json['nicsecondaryip']['ipaddress']
+
+    end
+
+
+    ## 
     # Assigns secondary IP to virtual machine identified by virtual_machine_id
 
     def add_ip_to_virtualmachine(virtual_machine_id, ipaddress)
@@ -277,6 +294,42 @@ module CloudstackClient
       return false
     end
 
+    def get_tags_for_resource(project_id, resource_type, resource_id)
+      params = {
+       'command'      => 'listTags',
+        'projectid'    => project_id,
+        'resourceid'   => resource_id,
+        'resourcetype' => resource_type,
+      }
+      json = send_request(params)
+       if json['tag'] then
+          json['tag']
+       else 
+          false
+       end
+    end
+
+    def add_tag_for_resource(project_id, resource_type, resource_id, key, value)
+      params = {
+        'command'       => 'createTags',
+        'projectid'     => project_id,
+        'resourceids'    => resource_id,
+        'resourcetype'  => resource_type,
+        'tags[0].key'   => key,
+        'tags[0].value' => value,
+      }
+      json = send_request(params)
+      if json['jobresult'] then
+        if json['jobresult']['success'] == true 
+          true
+        else 
+          false
+        end        
+      else 
+        false
+      end
+    end
+
     ##
     # Lists all the servers in your account.
 
@@ -288,6 +341,18 @@ module CloudstackClient
       json = send_request(params)
       json['virtualmachine'] || []
     end
+
+    ##
+    # Lists all the servers in your account.
+
+    def list_server(virtual_machine_id)
+      params = {
+          'command' => 'listVirtualMachines',
+          'id'      => virtual_machine_id,
+      }
+      json = send_request(params)
+      json['virtualmachine'].first || false
+    end    
 
     ##
     # Deploys a new server using the specified parameters.
@@ -742,7 +807,7 @@ module CloudstackClient
     # The wrapper element of the response (e.g. mycommandresponse) is discarded and the
     # contents of that element are returned.
 
-    def send_request(params)
+    def send_request(params, responseCommand=false)
       params['response'] = 'json'
       params['apiKey'] = @api_key
 
@@ -774,7 +839,12 @@ module CloudstackClient
       end
 
       json = JSON.parse(response.body)
-      json[params['command'].downcase + 'response']
+
+      if responseCommand then
+        json[responseCommand.downcase + 'response']        
+      else
+        json[params['command'].downcase + 'response']
+      end
     end
 
     ##
@@ -782,9 +852,9 @@ module CloudstackClient
     #
     # The contents of the 'jobresult' element are returned upon completion of the command.
 
-    def send_async_request(params)
+    def send_async_request(params, responseCommand=false)
 
-      json = send_request(params)
+      json = send_request(params, responseCommand)
 
       params = {
           'command' => 'queryAsyncJobResult',
