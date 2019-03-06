@@ -1,7 +1,6 @@
 require 'ipaddr'
 
-module Puppet
-  newtype(:cloudstack_firewall) do
+Puppet::Type.newtype(:cloudstack_firewall) do
     @doc = "Manages a firewall rules in CloudStack:
 
       cloudstack_firewall{'ssh':
@@ -47,5 +46,5 @@ module Puppet
       defaultto 'TCP'
       newvalues('TCP', 'UDP')
     end
-  end # Type
-end # Module
+
+end # Typeß
