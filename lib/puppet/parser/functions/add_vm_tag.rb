@@ -26,20 +26,27 @@ module Puppet::Parser::Functions
     project_id = project['id']
 
     vm = cc.api.get_server(virtual_machine_name, project_id)
-    tags = cc.api.get_tags_for_resource(project_id, 'UserVM', vm['id'])
 
-    if tags[0]['key'] == key and tags[0]['value'] == value
-      # Do nothing, tag already exists
-      true
-    else
-      if vm then
+    if vm then
+      tags = cc.api.get_tags_for_resource(project_id, 'UserVM', vm['id'])
+      tags.each do |tag|
+        if tag['key'] == key then
+          if tag['value'] == value then
+            # Do nothing, tag already exists
+            setTag = false
+            break
+          end
+        end
+      end
+
+      if setTag then
         # Add tag as it doesn't exist yet
         cc.api.add_tag_for_resource(project_id, 'UserVM', vm['id'], key, value)
-      else
-        err "Could not get data for VM from Cloudstack API."
-        false
       end
-      true
+    else
+      err "Could not get data for VM from Cloudstack API."
+      false
     end
+    true
   end
 end
