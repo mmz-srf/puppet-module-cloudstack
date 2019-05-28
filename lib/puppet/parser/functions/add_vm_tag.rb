@@ -33,7 +33,7 @@ module Puppet::Parser::Functions
       true
     else
       if vm then
-        puts "Add Tag!"
+        # Add tag as it doesn't exist yet
         cc.api.add_tag_for_resource(project_id, 'UserVM', vm['id'], key, value)
       else
         err "Could not get data for VM from Cloudstack API."
