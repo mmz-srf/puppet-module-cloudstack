@@ -27,6 +27,8 @@ module Puppet::Parser::Functions
 
     vm = cc.api.get_server(virtual_machine_name, project_id)
 
+    setTag = true
+
     if vm then
       tags = cc.api.get_tags_for_resource(project_id, 'UserVM', vm['id'])
       tags.each do |tag|
