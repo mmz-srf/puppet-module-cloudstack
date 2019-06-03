@@ -31,12 +31,14 @@ module Puppet::Parser::Functions
 
     if vm then
       tags = cc.api.get_tags_for_resource(project_id, 'UserVM', vm['id'])
-      tags.each do |tag|
-        if tag['key'] == key then
-          if tag['value'] == value then
-            # Do nothing, tag already exists
-            setTag = false
-            break
+      if tags then
+        tags.each do |tag|
+          if tag['key'] == key then
+            if tag['value'] == value then
+              # Do nothing, tag already exists
+              setTag = false
+              break
+            end
           end
         end
       end
