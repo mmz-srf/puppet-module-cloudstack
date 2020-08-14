@@ -30,6 +30,7 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
             :publicport => pf_rule['publicport'],
             :protocol => pf_rule['protocol'],
             :virtual_machine => pf_rule['virtualmachinename'],
+            :cidrlist => pf_rule['cidrlist'],
             :vm_guest_ip => pf_rule['vmguestip'],
             :virtual_machine_id => pf_rule['virtualmachineid'],
             :ensure => :present
@@ -55,6 +56,7 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
         'privateport' => @resource[:privateport],
         'ipaddressid' => public_ip_address['id'],
         'virtualmachineid' => @resource[:virtual_machine_id],
+        'cidrlist' => @resource[:cidrlist],
         'openfirewall' => 'true',
     }
 
