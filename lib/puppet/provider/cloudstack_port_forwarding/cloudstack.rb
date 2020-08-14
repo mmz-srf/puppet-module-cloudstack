@@ -24,16 +24,15 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
 
         name = "#{pf_rule['ipaddress']}_#{vmguestip}_#{pf_rule['virtualmachineid']}_#{pf_rule['privateport']}_#{pf_rule['publicport']}_#{pf_rule['protocol'].downcase}"
         instances << new(
-          :name => "#{pf_rule['ipaddress']}_#{pf_rule['virtualmachineid']}_#{pf_rule['vmguestip']}_#{pf_rule['privateport']}_#{pf_rule['publicport']}_#{pf_rule['protocol'].downcase}",
-          :front_ip => pf_rule['ipaddress'],
-          :privateport => pf_rule['privateport'],
-          :publicport => pf_rule['publicport'],
-          :protocol => pf_rule['protocol'],
-          :virtual_machine => pf_rule['virtualmachinename'],
-          :cidrlist => pf_rule['cidrlist'],
-          :vm_guest_ip => pf_rule['vmguestip'],
-          :virtual_machine_id => pf_rule['virtualmachineid'],
-          :ensure => :present
+            :name => name,
+            :front_ip => pf_rule['ipaddress'],
+            :privateport => pf_rule['privateport'],
+            :publicport => pf_rule['publicport'],
+            :protocol => pf_rule['protocol'],
+            :virtual_machine => pf_rule['virtualmachinename'],
+            :vm_guest_ip => pf_rule['vmguestip'],
+            :virtual_machine_id => pf_rule['virtualmachineid'],
+            :ensure => :present
         )
       end
     end
@@ -50,14 +49,13 @@ Puppet::Type.type(:cloudstack_port_forwarding).provide(:cloudstack) do
 
   def create
     params = {
-      'command' => 'createPortForwardingRule',
-      'protocol' => @resource[:protocol],
-      'publicport' => @resource[:publicport],
-      'privateport' => @resource[:privateport],
-      'ipaddressid' => public_ip_address['id'],
-      'virtualmachineid' => @resource[:virtual_machine_id],
-      'cidrlist' => @resource[:cidrlist],
-      'openfirewall' => 'true',
+        'command' => 'createPortForwardingRule',
+        'protocol' => @resource[:protocol],
+        'publicport' => @resource[:publicport],
+        'privateport' => @resource[:privateport],
+        'ipaddressid' => public_ip_address['id'],
+        'virtualmachineid' => @resource[:virtual_machine_id],
+        'openfirewall' => 'true',
     }
 
     params['vmguestip'] = @resource[:vm_guest_ip] unless @resource[:vm_guest_ip] == '0.0.0.0'

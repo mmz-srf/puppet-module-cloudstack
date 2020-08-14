@@ -2,17 +2,17 @@ require 'ipaddr'
 
 Puppet::Type.newtype(:cloudstack_port_forwarding) do
   @doc = "Manages a port forwarding rule in CloudStack:
-      cloudstack_port_forwarding{'rule_name':
-        ensure => 'present',
-        front_ip,
-        protocol,
-        privateport,
-        publicport,
-        virtual_machine,
-        virtual_machine_id,
-        cidrlist => '0.0.0.0/0',
-        vm_guest_ip => unset
-      }"
+
+    cloudstack_port_forwarding{'rule_name':
+      ensure => 'present',
+      front_ip,
+      protocol,
+      privateport,
+      publicport,
+      virtual_machine,
+      virtual_machine_id,
+      vm_guest_ip => unset
+    }"
 
   ensurable
 
@@ -50,21 +50,6 @@ Puppet::Type.newtype(:cloudstack_port_forwarding) do
     desc "The protocol of the port forwarding rule"
     defaultto 'tcp'
     newvalues('TCP', 'UDP', 'tcp', 'udp')
-  end
-
-  newparam(:cidrlist) do
-    desc "The cidr list to forward traffic from"
-    defaultto '0.0.0.0/0'
-    validate do |value|
-      fail("Invalid cidlist #{value}") unless (IPAddr.new(value) rescue false)
-    end
-  end
-
-  newparam(:vm_guest_ip) do
-    desc "IP of the guest VM"
-    validate do |value|
-      fail("Invalid vm_guest_ip #{value}") unless (IPAddr.new(value) rescue false)
-    end
   end
 
   newparam(:vm_guest_ip) do
