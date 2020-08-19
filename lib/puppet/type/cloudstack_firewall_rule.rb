@@ -43,8 +43,8 @@ Puppet::Type.newtype(:cloudstack_firewall_rule) do
 
     newparam(:protocol) do
       desc "The protocol of the firewall rule"
-      defaultto 'TCP'
-      newvalues('TCP', 'UDP')
+      defaultto 'tcp'
+      newvalues('tcp', 'udp')
     end
 
 end # Typeß

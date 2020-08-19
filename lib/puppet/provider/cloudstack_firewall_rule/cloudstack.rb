@@ -18,7 +18,7 @@ Puppet::Type.type(:cloudstack_firewall_rule).provide(:cloudstack) do
     if json.has_key?('firewallrule')
       json['firewallrule'].each do |fw_rule|
         instances << new(
-          :name => "#{fw_rule['ipaddress']}_#{fw_rule['startport']}_#{fw_rule['endport']}",
+          :name => "#{fw_rule['ipaddress']}_#{fw_rule['cidrlist']}_#{fw_rule['startport']}_#{fw_rule['endport']}_#{fw_rule['protocol']}",
           :front_ip => fw_rule['ipaddress'],
           :startport => fw_rule['startport'],
           :endport => fw_rule['endport'],
@@ -80,7 +80,14 @@ Puppet::Type.type(:cloudstack_firewall_rule).provide(:cloudstack) do
   end
 
   def exists?
-  	get(:ensure) != :absent
+    expected_name = "#{@resource['front_ip']}_#{@resource['cidrlist']}_#{@resource['startport']}_#{@resource['endport']}_#{@resource['protocol'].downcase}"
+    debug("Checking presence of firewall rule for resouce for resource #{expected_name}")
+    self.class.instances.each do |instance|
+      if instance.get(:name) == expected_name
+        return true
+      end
+    end
+    return false
   end
 
   private
