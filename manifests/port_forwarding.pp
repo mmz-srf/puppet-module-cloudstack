@@ -14,7 +14,6 @@ define cloudstack::port_forwarding (
     startport          => $port,
     endport            => $port,
     protocol           => $protocol,
-    virtual_machine_id => $::instance_id,
   }
 
   debug("${caller_module_name}->${module_name} : Configuring Portforwarding for ${front_ip} -> $vm_guest_ip, protocol:${protocol}, port:${port}")

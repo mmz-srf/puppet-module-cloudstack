@@ -14,6 +14,5 @@ define cloudstack::firewall_rule (
     startport          => $startport,
     endport            => $endport,
     protocol           => $protocol,
-    virtual_machine_id => $::instance_id,
   }
 }
