@@ -11,7 +11,6 @@ Puppet::Type.newtype(:cloudstack_port_forwarding) do
       publicport,
       virtual_machine,
       virtual_machine_id,
-      cidrlist => '0.0.0.0/0',
       vm_guest_ip => unset
     }"
 
@@ -51,14 +50,6 @@ Puppet::Type.newtype(:cloudstack_port_forwarding) do
     desc "The protocol of the port forwarding rule"
     defaultto 'tcp'
     newvalues('TCP', 'UDP', 'tcp', 'udp')
-  end
-
-  newparam(:cidrlist) do
-    desc "the cidr list to forward traffic from"
-    defaultto '0.0.0.0/0'
-    validate do |value|
-      fail("Invalid vm_guest_ip #{value}") unless (IPAddr.new(value) rescue false)
-    end
   end
 
   newparam(:vm_guest_ip) do
