@@ -816,7 +816,7 @@ module CloudstackClient
         params_arr << elem[0].to_s + '=' + elem[1].to_s
       }
       data = params_arr.join('&')
-      encoded_data = URI.encode(data.downcase).gsub('+', '%20').gsub(',', '%2c')
+      encoded_data = URI.encode(data.downcase).gsub('+', '%20').gsub(',', '%2c').gsub('/', '%2f')
       signature = OpenSSL::HMAC.digest('sha1', @secret_key, encoded_data)
       signature = Base64.encode64(signature).chomp
       signature = CGI.escape(signature)

@@ -45,7 +45,7 @@ Puppet::Type.type(:cloudstack_firewall_rule).provide(:cloudstack) do
       'protocol' => @resource[:protocol],
       'startport' => @resource[:startport],
       'endport' => @resource[:endport],
-      'cidrlist' => @resource[:cidrlist].gsub('/', '%2F'),
+      'cidrlist' => @resource[:cidrlist],
       'ipaddressid' => public_ip_address['id'],
     }
     api.send_request(params)
