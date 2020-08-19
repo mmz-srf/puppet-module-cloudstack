@@ -1,11 +1,11 @@
 require 'ipaddr'
 
-Puppet::Type.newtype(:cloudstack_firewall) do
+Puppet::Type.newtype(:cloudstack_firewall_rule) do
     @doc = "Manages a firewall rules in CloudStack:
 
-      cloudstack_firewall{'ssh':
+      cloudstack_firewall_rule{'ssh':
         ensure => 'present',
-        vip,
+        front_ip,
         protocol,
         startport,
         endport,
@@ -19,7 +19,7 @@ Puppet::Type.newtype(:cloudstack_firewall) do
       isnamevar
     end
 
-    newparam(:vip) do
+    newparam(:front_ip) do
       desc "The virtual IP of the firewall rule"
       validate do |value|
         fail("Invalid source #{value}") unless (IPAddr.new(value) rescue false)

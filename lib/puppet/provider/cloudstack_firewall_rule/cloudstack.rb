@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), '../../../util/cloudstack_client')
 
-Puppet::Type.type(:cloudstack_firewall).provide(:cloudstack) do
+Puppet::Type.type(:cloudstack_firewall_rule).provide(:cloudstack) do
   include CloudstackClient::Helper
 
   desc "Provider for the CloudStack firewall."
@@ -19,7 +19,7 @@ Puppet::Type.type(:cloudstack_firewall).provide(:cloudstack) do
       json['firewallrule'].each do |fw_rule|
         instances << new(
           :name => "#{fw_rule['ipaddress']}_#{fw_rule['startport']}_#{fw_rule['endport']}",
-          :vip => fw_rule['ipaddress'],
+          :front_ip => fw_rule['ipaddress'],
           :startport => fw_rule['startport'],
           :endport => fw_rule['endport'],
           :protocol => fw_rule['protocol'],
@@ -45,8 +45,7 @@ Puppet::Type.type(:cloudstack_firewall).provide(:cloudstack) do
       'protocol' => @resource[:protocol],
       'startport' => @resource[:startport],
       'endport' => @resource[:endport],
-      # FIXME cidrlist does throw a api error
-      #'cidrlist' => @resource[:cidrlist].gsub('/', '%2F'),
+      'cidrlist' => @resource[:cidrlist].gsub('/', '%2F'),
       'ipaddressid' => public_ip_address['id'],
     }
     api.send_request(params)
@@ -54,11 +53,11 @@ Puppet::Type.type(:cloudstack_firewall).provide(:cloudstack) do
   end
 
   def destroy
-    vip = public_ip_address(@resource[:vip])
+    front_ip = public_ip_address(@resource[:front_ip])
     
     params = {
       'command' => 'listFirewallRules',
-      'ipaddressid' => vip['id']
+      'ipaddressid' => front_ip['id']
     }
     params['projectid'] = project['id'] if project
     json = api.send_request(params)
@@ -89,7 +88,7 @@ Puppet::Type.type(:cloudstack_firewall).provide(:cloudstack) do
   def public_ip_address
     params = {
       'command' => 'listPublicIpAddresses',
-      'ipaddress' => @resource[:vip],
+      'ipaddress' => @resource[:front_ip],
     }
     params['projectid'] = project['id'] if project
     json = api.send_request(params)
